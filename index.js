@@ -1,14 +1,6 @@
 const dgram = require('dgram');
 const { Parser } = require('binary-parser-encoder');
 
-function nlo(byte) {
-	return (byte) & 0xF;
-}
-
-function nhi(byte) {
-	return ((byte) >> 4) & 0xF;
-}
-
 const masterServerParsers = {
 	[2012]: new Parser()
 		.string('header', { length: 5 })
@@ -64,9 +56,12 @@ const gameServerParsers = {
 		.string('header', { length: 5 })
 		.uint8('version')
 		.uint32le('timestamp')
-		.uint8('nibble1')
-		.uint8('nibble2')
-		.uint8('nibble3')
+		.bit4('playersLow')
+		.bit4('gameType')
+		.bit4('maxPlayersLow')
+		.bit4('playersHigh')
+		.bit4('unknown1')
+		.bit4('maxPlayersHigh')
 		.string('name', {
 			encoding: 'ascii',
 			length: 32,
@@ -77,9 +72,12 @@ const gameServerParsers = {
 		.string('header', { length: 5 })
 		.uint8('version')
 		.uint32le('timestamp')
-		.uint8('nibble1')
-		.uint8('nibble2')
-		.uint8('nibble3')
+		.bit4('playersLow')
+		.bit4('gameType')
+		.bit4('maxPlayersLow')
+		.bit4('playersHigh')
+		.bit4('unknown1')
+		.bit4('maxPlayersHigh')
 		.string('name', {
 			encoding: 'ascii',
 			length: 32,
@@ -90,9 +88,12 @@ const gameServerParsers = {
 		.string('header', { length: 5 })
 		.uint8('version')
 		.uint32le('timestamp')
-		.uint8('nibble1')
-		.uint8('nibble2')
-		.uint8('nibble3')
+		.bit4('playersLow')
+		.bit4('gameType')
+		.bit4('maxPlayersLow')
+		.bit4('playersHigh')
+		.bit4('unknown1')
+		.bit4('maxPlayersHigh')
 		.string('name', {
 			encoding: 'ascii',
 			length: 32,
@@ -108,15 +109,18 @@ const gameServerParsers = {
 		.uint16le('port')
 		.bit7('build')
 		.bit1('passworded')
-		.uint8('clientCompatability')
-		.uint8('unknown'),
+		.bit7('clientCompatability')
+		.bit9('unknown2'),
 	[2019]: new Parser()
 		.string('header', { length: 5 })
 		.uint8('version')
 		.uint32le('timestamp')
-		.uint8('nibble1')
-		.uint8('nibble2')
-		.uint8('nibble3')
+		.bit4('playersLow')
+		.bit4('gameType')
+		.bit4('maxPlayersLow')
+		.bit4('playersHigh')
+		.bit4('unknown1')
+		.bit4('maxPlayersHigh')
 		.string('name', {
 			encoding: 'ascii',
 			length: 32,
@@ -132,8 +136,8 @@ const gameServerParsers = {
 		.uint16le('port')
 		.bit7('build')
 		.bit1('passworded')
-		.uint8('clientCompatability')
-		.uint8('unknown')
+		.bit7('clientCompatability')
+		.bit9('unknown2')
 };
 
 const gameServerRequest = new Parser()
@@ -231,9 +235,9 @@ async function getServerList() {
 							clientCompatability: data.clientCompatability || 0,
 							passworded: (data.passworded || 0) != 0,
 							identifier: data.identifier,
-							gameType: nlo(data.nibble1),
-							players: (nlo(data.nibble2) << 4) | nhi(data.nibble1),
-							maxPlayers: (nlo(data.nibble3) << 4) | nhi(data.nibble2)
+							gameType: data.gameType,
+							players: (data.playersHigh << 4) | data.playersLow,
+							maxPlayers: (data.maxPlayersHigh << 4) | data.maxPlayersLow,
 						});
 					} catch (err) {
 						//
