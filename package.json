@@ -1,0 +1,25 @@
+{
+  "name": "sub-rosa-servers",
+  "version": "1.0.0",
+  "description": "Grab info about currently running Sub Rosa servers.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jdbool/sub-rosa-servers.git"
+  },
+  "keywords": [
+    "sub-rosa"
+  ],
+  "author": "jdbool",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jdbool/sub-rosa-servers/issues"
+  },
+  "homepage": "https://github.com/jdbool/sub-rosa-servers#readme",
+  "dependencies": {
+    "binary-parser-encoder": "^1.4.4"
+  }
+}
