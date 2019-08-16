@@ -21,5 +21,8 @@
   "homepage": "https://github.com/jdbool/sub-rosa-servers#readme",
   "dependencies": {
     "binary-parser-encoder": "^1.4.4"
+  },
+  "devDependencies": {
+    "@types/node": "^12.7.2"
   }
 }
