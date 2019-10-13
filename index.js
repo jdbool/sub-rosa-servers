@@ -155,25 +155,25 @@ async function getMasterServerBuffer(typeByte, client, address, port) {
 		let attempts = 0;
 		const attempt = () => {
 			attempts++;
-			if (attempts > 10) {
-				return reject('Master server did not respond');
-			}
+			if (attempts > 10) return;
 			client.send(requestHeader, port, address, err => {
-				if (err) {
-					return reject(err);
-				}
-				attemptTimer = setTimeout(attempt, 250);
+				if (err) return reject(err);
 			});
 		};
 
 		client.on('message', (buffer, rinfo) => {
 			if (rinfo.address == address && rinfo.port == port) {
-				clearTimeout(attemptTimer);
+				clearInterval(attemptTimer);
 				resolve(buffer);
 			}
 		});
 
-		attempt();
+		attemptTimer = setInterval(attempt, 5);
+
+		setTimeout(() => {
+			clearInterval(attemptTimer);
+			reject('No response');
+		}, 200);
 	});
 }
 
