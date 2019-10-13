@@ -1,6 +1,6 @@
 {
   "name": "sub-rosa-servers",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Grab info about currently running Sub Rosa servers.",
   "main": "index.js",
   "scripts": {
