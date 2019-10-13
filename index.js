@@ -186,19 +186,34 @@ async function getServerList() {
 			const timestamp = Math.floor(Date.now() / 1000);
 			let serverAddresses = [];
 
-			for (const server of masterServerParsers[2019].parse(await getMasterServerBuffer(0x4a, client, '216.55.185.95', 27592)).servers) {
-				server.protocol = 2019;
-				serverAddresses.push(server);
+			try {
+				const buffer = await getMasterServerBuffer(0x4a, client, '216.55.185.95', 27592);
+				for (const server of masterServerParsers[2019].parse(buffer).servers) {
+					server.protocol = 2019;
+					serverAddresses.push(server);
+				}
+			} catch (err) {
+				//
 			}
 
-			for (const server of masterServerParsers[2015].parse(await getMasterServerBuffer(0x4a, client, '216.55.185.95', 27591)).servers) {
-				server.protocol = 2015;
-				serverAddresses.push(server);
+			try {
+				const buffer = await getMasterServerBuffer(0x4a, client, '216.55.185.95', 27591);
+				for (const server of masterServerParsers[2015].parse(buffer).servers) {
+					server.protocol = 2015;
+					serverAddresses.push(server);
+				}
+			} catch (err) {
+				//
 			}
 
-			for (const server of masterServerParsers[2012].parse(await getMasterServerBuffer(0x21, client, '216.55.185.95', 27590)).servers) {
-				server.protocol = 2012;	
-				serverAddresses.push(server);
+			try {
+				const buffer = await getMasterServerBuffer(0x21, client, '216.55.185.95', 27590);
+				for (const server of masterServerParsers[2012].parse(buffer).servers) {
+					server.protocol = 2012;	
+					serverAddresses.push(server);
+				}
+			} catch (err) {
+				//
 			}
 		
 			const pingPayload = gameServerRequest.encode({
