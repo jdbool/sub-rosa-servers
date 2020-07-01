@@ -10,11 +10,11 @@ const masterServerParsers = {
 				.array('address', {
 					type: 'uint8',
 					length: 4,
-					formatter: arr => arr.reverse().join('.'),
-					encoder: str => str.split('.').reverse()
+					formatter: (arr) => arr.reverse().join('.'),
+					encoder: (str) => str.split('.').reverse(),
 				})
 				.uint16le('port'),
-			length: 'numServers'
+			length: 'numServers',
 		}),
 	[2015]: new Parser()
 		.string('header', { length: 5 })
@@ -24,11 +24,11 @@ const masterServerParsers = {
 				.array('address', {
 					type: 'uint8',
 					length: 4,
-					formatter: arr => arr.reverse().join('.'),
-					encoder: str => str.split('.').reverse()
+					formatter: (arr) => arr.reverse().join('.'),
+					encoder: (str) => str.split('.').reverse(),
 				})
 				.uint16le('port'),
-			length: 'numServers'
+			length: 'numServers',
 		}),
 	[2019]: new Parser()
 		.string('header', { length: 5 })
@@ -39,12 +39,12 @@ const masterServerParsers = {
 				.array('address', {
 					type: 'uint8',
 					length: 4,
-					formatter: arr => arr.reverse().join('.'),
-					encoder: str => str.split('.').reverse()
+					formatter: (arr) => arr.reverse().join('.'),
+					encoder: (str) => str.split('.').reverse(),
 				})
 				.uint16le('port'),
-			length: 'numServers'
-		})
+			length: 'numServers',
+		}),
 };
 
 const gameServerHeaderParser = new Parser()
@@ -65,7 +65,7 @@ const gameServerParsers = {
 		.string('name', {
 			encoding: 'ascii',
 			length: 32,
-			formatter: str => str.split('\0')[0]
+			formatter: (str) => str.split('\0')[0],
 		})
 		.uint32le('identifier'),
 	[2015]: new Parser()
@@ -81,7 +81,7 @@ const gameServerParsers = {
 		.string('name', {
 			encoding: 'ascii',
 			length: 32,
-			formatter: str => str.split('\0')[0]
+			formatter: (str) => str.split('\0')[0],
 		})
 		.uint32le('identifier'),
 	[2018]: new Parser()
@@ -97,14 +97,14 @@ const gameServerParsers = {
 		.string('name', {
 			encoding: 'ascii',
 			length: 32,
-			formatter: str => str.split('\0')[0]
+			formatter: (str) => str.split('\0')[0],
 		})
 		.uint32le('identifier')
 		.array('address', {
 			type: 'uint8',
 			length: 4,
-			formatter: arr => arr.reverse().join('.'),
-			encoder: str => str.split('.').reverse()
+			formatter: (arr) => arr.reverse().join('.'),
+			encoder: (str) => str.split('.').reverse(),
 		})
 		.uint16le('port')
 		.bit7('build')
@@ -124,20 +124,20 @@ const gameServerParsers = {
 		.string('name', {
 			encoding: 'ascii',
 			length: 32,
-			formatter: str => str.split('\0')[0]
+			formatter: (str) => str.split('\0')[0],
 		})
 		.uint32le('identifier')
 		.array('address', {
 			type: 'uint8',
 			length: 4,
-			formatter: arr => arr.reverse().join('.'),
-			encoder: str => str.split('.').reverse()
+			formatter: (arr) => arr.reverse().join('.'),
+			encoder: (str) => str.split('.').reverse(),
 		})
 		.uint16le('port')
 		.bit7('build')
 		.bit1('passworded')
 		.bit7('clientCompatability')
-		.bit9('unknown2')
+		.bit9('unknown2'),
 };
 
 const gameServerRequest = new Parser()
@@ -156,7 +156,7 @@ async function getMasterServerBuffer(typeByte, client, address, port) {
 		const attempt = () => {
 			attempts++;
 			if (attempts > 10) return;
-			client.send(requestHeader, port, address, err => {
+			client.send(requestHeader, port, address, (err) => {
 				if (err) return reject(err);
 			});
 		};
@@ -178,7 +178,7 @@ async function getMasterServerBuffer(typeByte, client, address, port) {
 }
 
 async function getServerList() {
-	return new Promise(async resolve => {
+	return new Promise(async (resolve) => {
 		const client = dgram.createSocket('udp4');
 		let allResponded = false;
 
@@ -187,7 +187,12 @@ async function getServerList() {
 			let serverAddresses = [];
 
 			try {
-				const buffer = await getMasterServerBuffer(0x4a, client, '216.55.185.95', 27592);
+				const buffer = await getMasterServerBuffer(
+					0x4a,
+					client,
+					'66.226.72.227',
+					27592
+				);
 				for (const server of masterServerParsers[2019].parse(buffer).servers) {
 					server.protocol = 2019;
 					serverAddresses.push(server);
@@ -197,7 +202,12 @@ async function getServerList() {
 			}
 
 			try {
-				const buffer = await getMasterServerBuffer(0x4a, client, '216.55.185.95', 27591);
+				const buffer = await getMasterServerBuffer(
+					0x4a,
+					client,
+					'66.226.72.227',
+					27591
+				);
 				for (const server of masterServerParsers[2015].parse(buffer).servers) {
 					server.protocol = 2015;
 					serverAddresses.push(server);
@@ -207,43 +217,51 @@ async function getServerList() {
 			}
 
 			try {
-				const buffer = await getMasterServerBuffer(0x21, client, '216.55.185.95', 27590);
+				const buffer = await getMasterServerBuffer(
+					0x21,
+					client,
+					'66.226.72.227',
+					27590
+				);
 				for (const server of masterServerParsers[2012].parse(buffer).servers) {
-					server.protocol = 2012;	
+					server.protocol = 2012;
 					serverAddresses.push(server);
 				}
 			} catch (err) {
 				//
 			}
-		
+
 			const pingPayload = gameServerRequest.encode({
 				magic: '7DFP',
 				type: 0,
 				version: 35,
-				timestamp
+				timestamp,
 			});
-		
+
 			const servers = [];
 			const startTime = Date.now();
-		
+
 			client.on('message', (buffer, rinfo) => {
-				const server = serverAddresses.find(s => s.address == rinfo.address && s.port == rinfo.port);
+				const server = serverAddresses.find(
+					(s) => s.address == rinfo.address && s.port == rinfo.port
+				);
 				if (server) {
-					serverAddresses = serverAddresses.filter(s => s.address != server.address || s.port != server.port);
+					serverAddresses = serverAddresses.filter(
+						(s) => s.address != server.address || s.port != server.port
+					);
 					try {
 						const header = gameServerHeaderParser.parse(buffer);
-						if (header.version == 34)
-							server.protocol = 2018;
-							
+						if (header.version == 34) server.protocol = 2018;
+
 						const data = gameServerParsers[server.protocol].parse(buffer);
 						if (data.timestamp != timestamp) return;
-						
+
 						servers.push({
 							address: server.address,
 							port: server.port,
 							latency: Date.now() - startTime,
 							buffer: buffer,
-							
+
 							name: data.name,
 							version: data.version,
 							build: String.fromCharCode(97 + (data.build || 0)),
@@ -264,7 +282,7 @@ async function getServerList() {
 					}
 				}
 			});
-		
+
 			for (const server of serverAddresses)
 				client.send(pingPayload, server.port, server.address);
 
